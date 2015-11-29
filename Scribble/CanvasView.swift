@@ -25,9 +25,11 @@ class CanvasView: UIImageView {
   var lineWidth: CGFloat = 6
   
   var pencilTexture: UIColor = UIColor(patternImage: UIImage(named: "PencilTexture")!)
+  
   // Threshold Parameters
   let ForceSensitivity:CGFloat = 4.0
   let TiltThreshold = π / 6
+  let MinLineWidth:CGFloat = 5
   
   
   required init?(coder aDecoder: NSCoder) {
@@ -102,10 +104,10 @@ class CanvasView: UIImageView {
       CGContextSetLineCap(context, .Round)
 
       lineWidth = touch.majorRadius / 2
-      lineWidth = max(lineWidth, 6)
 
       eraserColor.setStroke()
     }
+    lineWidth = max(lineWidth, MinLineWidth)
     CGContextSetLineWidth(context, lineWidth)
     
     // Set up the points
@@ -160,7 +162,6 @@ class CanvasView: UIImageView {
       angle = π - angle
     }
     
-    let minLineWidth:CGFloat = 5
     let maxLineWidth:CGFloat = 60
     
     let minAngle:CGFloat = 0
@@ -177,7 +178,7 @@ class CanvasView: UIImageView {
     let altitudeAngle = touch.altitudeAngle < minAltitudeAngle ? minAltitudeAngle : touch.altitudeAngle
     let normalizedAltitude = 1 - ((altitudeAngle - minAltitudeAngle) / (maxAltitudeAngle - minAltitudeAngle))
     
-    lineWidth = lineWidth * normalizedAltitude + minLineWidth
+    lineWidth = lineWidth * normalizedAltitude + MinLineWidth
     
     
     // set alpha of shading using force
