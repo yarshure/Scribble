@@ -14,32 +14,22 @@ class CanvasView: UIImageView {
   
   var drawingImage: UIImage?
   
-  var drawColor: UIColor = UIColor.redColor()
-  var eraserColor: UIColor {
+  private var drawColor: UIColor = UIColor.redColor()
+  private var eraserColor: UIColor {
     if let backgroundColor = self.backgroundColor {
       return backgroundColor
     }
     return UIColor.whiteColor()
   }
   
-  var lineWidth: CGFloat = 6
-  
-  var pencilTexture: UIColor = UIColor(patternImage: UIImage(named: "PencilTexture")!)
+  private var lineWidth: CGFloat = 6
+  private var pencilTexture: UIColor = UIColor(patternImage: UIImage(named: "PencilTexture")!)
   
   // Threshold Parameters
-  let ForceSensitivity:CGFloat = 4.0
-  let TiltThreshold = π / 6
-  let MinLineWidth:CGFloat = 5
+  private let ForceSensitivity:CGFloat = 4.0
+  private let TiltThreshold = π / 6
+  private let MinLineWidth:CGFloat = 5
   
-  // For averaging line sizes
-  let MaxLineWidthGrowth:CGFloat = 5  // Max amount line width can increase for a stroke
-  let LineSizeTolerance:Int = 115 // Number of lines to hold in array
-  var previousLineSizes = [CGFloat]()
-  
-  
-  override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-    previousLineSizes = [CGFloat]()
-  }
   
   override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
     guard let touch = touches.first else { return }
@@ -88,7 +78,7 @@ class CanvasView: UIImageView {
   }
   
   
-  func drawStroke(context: CGContext?, touch: UITouch) {
+  private func drawStroke(context: CGContext?, touch: UITouch) {
     let previousLocation = touch.previousLocationInView(self)
     let location = touch.locationInView(self)
     
@@ -102,6 +92,10 @@ class CanvasView: UIImageView {
       
       // Set up the default stroke
       pencilTexture.setStroke()
+      
+      if touch.altitudeAngle > TiltThreshold {
+        UIColor.redColor().setStroke()
+      }
     } else {
       // erase with finger
       CGContextSetLineCap(context, .Round)
@@ -115,57 +109,32 @@ class CanvasView: UIImageView {
     
     CGContextSetLineWidth(context, lineWidth)
     
-    let isSimple = true
-    
-    if isSimple {
-      // Set up the points
-      CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
-      CGContextAddLineToPoint(context, location.x, location.y)
-    } else {
-      
-      func distanceBetweenTwoPoints(from from:CGPoint, to:CGPoint) -> CGFloat {
-        let squared = (from.x-to.x)*(from.x-to.x) + (from.y-to.y)*(from.y-to.y)
-        return sqrt(squared)
-      }
-      
-      let distance = distanceBetweenTwoPoints(from: previousLocation, to: location)
-      
-      CGContextBeginPath(context)
-      CGContextSetStrokeColorWithColor(context, UIColor.redColor().CGColor)
-      pencilTexture.setStroke()
-      
-      
-      CGContextSetLineWidth(context, distance);
-      CGContextMoveToPoint(context, location.x, location.y)
-      
-      var targetPoint = CGPoint(x:0.5 + lineWidth * cos(touch.altitudeAngle), y:0.0)
-      targetPoint = CGPointApplyAffineTransform(targetPoint, CGAffineTransformMakeRotation(touch.azimuthAngleInView(self)))
-      targetPoint.x += location.x
-      targetPoint.y += location.y
-      CGContextAddLineToPoint(context, targetPoint.x, targetPoint.y)
-      
-      
-    }
-    
+    // Set up the points
+    CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
+    CGContextAddLineToPoint(context, location.x, location.y)
     // Draw the stroke
     CGContextStrokePath(context)
     
   }
   
-  func lineWidthForDrawing(context: CGContext?, touch: UITouch) -> CGFloat {
+  private func lineWidthForDrawing(context: CGContext?, touch: UITouch) -> CGFloat {
     
+    // Set up line for Drawing
     CGContextSetLineCap(context, .Round)
     var lineWidth = self.lineWidth
     
     if touch.force > 0 {  // If finger, touch.force = 0
-      lineWidth =  touch.force * ForceSensitivity
+      lineWidth = touch.force * ForceSensitivity
     }
+    
+    print(touch.force)
     
     return lineWidth
   }
   
-  func lineWidthForShading(context: CGContext?, touch: UITouch) -> CGFloat {
+  private func lineWidthForShading(context: CGContext?, touch: UITouch) -> CGFloat {
     
+    // Set up line for Shading
     CGContextSetLineCap(context, .Round)
     
     let previousLocation = touch.previousLocationInView(self)
@@ -185,9 +154,6 @@ class CanvasView: UIImageView {
     // if the angle between the pencil direction and the stroke direction is
     // 90º then the stroke is at the widest
     
-    // Note I'm sure this can be done in one step maybe with a modulo
-    // but for the moment I can't work it out!
-    
     if angle > π {
       angle = 2 * π - angle
     }
@@ -203,22 +169,24 @@ class CanvasView: UIImageView {
     lineWidth = maxLineWidth * normalizedAngle
     
     // modify lineWidth by altitude (tilt of the pencil)
-    // 0.25 radians means widest stroke and TiltThreshold is where shading changes to line.
+    // 0.25 radians means widest stroke and TiltThreshold is where shading narrows to line.
     
     let minAltitudeAngle:CGFloat = 0.25
     let maxAltitudeAngle:CGFloat = TiltThreshold
     
     let altitudeAngle = touch.altitudeAngle < minAltitudeAngle ? minAltitudeAngle : touch.altitudeAngle
+    
+    // normalize between 0 and 1
     let normalizedAltitude = 1 - ((altitudeAngle - minAltitudeAngle) / (maxAltitudeAngle - minAltitudeAngle))
     
     lineWidth = lineWidth * normalizedAltitude + MinLineWidth
     
-    
+
     // set alpha of shading using force
     let minForce:CGFloat = 0.0
     let maxForce:CGFloat = 5
     
-    // normalize
+    // normalize between 0 and 1
     let normalizedAlpha = (touch.force - minForce) / (maxForce - minForce)
     
     CGContextSetAlpha(context, normalizedAlpha)
@@ -226,8 +194,10 @@ class CanvasView: UIImageView {
     return lineWidth
   }
   
-  
-  
+  override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    // save last predicted touch
+    drawingImage = self.image
+  }
   
   func clearCanvas() {
     image = UIImage(named: "Background")
