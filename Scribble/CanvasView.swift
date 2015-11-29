@@ -18,6 +18,9 @@ class CanvasView: UIImageView {
   @IBInspectable var drawColor: UIColor = UIColor.redColor()
   @IBInspectable var lineWidth: CGFloat = 6
   
+  let ForceSensitivity:CGFloat = 4.0
+
+  
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
     self.layer.borderColor = UIColor.blueColor().CGColor
@@ -33,7 +36,18 @@ class CanvasView: UIImageView {
     // Draw previous image into context
     self.image?.drawInRect(bounds)
     
-    drawStroke(context, touch: touch)
+    var touches = [UITouch]()
+
+    // Coalesce Touches
+    if let coalescedTouches = event?.coalescedTouchesForTouch(touch) {
+      touches = coalescedTouches
+    } else {
+      touches.append(touch)
+    }
+
+    for touch in touches {
+      drawStroke(context, touch: touch)
+    }
     
     // Update image
     self.image = UIGraphicsGetImageFromCurrentImageContext()
@@ -48,6 +62,15 @@ class CanvasView: UIImageView {
     // Set up the default stroke
     CGContextSetLineCap(context, .Round)
     CGContextSetLineWidth(context, lineWidth)
+    
+    // calculate force
+    // if finger, force is 0
+    
+    let force = touch.force == 0 ? 1 : touch.force
+    if touch.type == .Stylus {
+      // draw line with pencil
+      CGContextSetLineWidth(context, force * ForceSensitivity)
+    }
     
     drawColor.setStroke()
     
