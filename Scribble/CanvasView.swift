@@ -36,7 +36,7 @@ class CanvasView: UIImageView {
   let LineSizeTolerance:Int = 115 // Number of lines to hold in array
   var previousLineSizes = [CGFloat]()
   
-
+  
   override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
     previousLineSizes = [CGFloat]()
   }
@@ -48,7 +48,7 @@ class CanvasView: UIImageView {
     let context = UIGraphicsGetCurrentContext()
     
     // Draw previous image into context
-//    self.image?.drawInRect(bounds)
+    //    self.image?.drawInRect(bounds)
     drawingImage?.drawInRect(bounds)
     
     var touches = [UITouch]()
@@ -65,7 +65,7 @@ class CanvasView: UIImageView {
     }
     
     drawingImage = UIGraphicsGetImageFromCurrentImageContext()
-
+    
     // Draw Predicted Touches, but they must be
     // removed from the canvas for the next draw
     // For visualizing predicted touches,
@@ -73,14 +73,14 @@ class CanvasView: UIImageView {
     
     if let predictedTouches = event?.predictedTouchesForTouch(touch) {
       touches = predictedTouches
-//      let holdPencilTexture = pencilTexture
-//      pencilTexture = UIColor.blueColor()
+      //      let holdPencilTexture = pencilTexture
+      //      pencilTexture = UIColor.blueColor()
       for touch in touches {
         drawStroke(context, touch: touch)
       }
-//      pencilTexture = holdPencilTexture
+      //      pencilTexture = holdPencilTexture
     }
-
+    
     // Update image
     self.image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
@@ -95,42 +95,64 @@ class CanvasView: UIImageView {
     if touch.type == .Stylus {
       // Check if shading
       if touch.altitudeAngle < TiltThreshold {
-        lineWidth = drawShading(context, touch: touch)
+        lineWidth = lineWidthForShading(context, touch: touch)
       } else {
-        lineWidth = drawLine(context, touch: touch)
+        lineWidth = lineWidthForDrawing(context, touch: touch)
       }
       
       // Set up the default stroke
-      
       pencilTexture.setStroke()
     } else {
       // erase with finger
       CGContextSetLineCap(context, .Round)
-
+      
       lineWidth = touch.majorRadius / 2
-
+      
       eraserColor.setStroke()
     }
     lineWidth = max(lineWidth, MinLineWidth)
     
-    // this removes blobs and makes drawing a bit smoother)
-    // lineWidth doesn't increment by more than
-    // MaxLineWidthGrowth plus average of last LineSizeTolerance points
-    lineWidth = averageLineWidth(lineWidth)
     
     CGContextSetLineWidth(context, lineWidth)
     
+    let isSimple = true
     
-    // Set up the points
-    CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
-    CGContextAddLineToPoint(context, location.x, location.y)
+    if isSimple {
+      // Set up the points
+      CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
+      CGContextAddLineToPoint(context, location.x, location.y)
+    } else {
+      
+      func distanceBetweenTwoPoints(from from:CGPoint, to:CGPoint) -> CGFloat {
+        let squared = (from.x-to.x)*(from.x-to.x) + (from.y-to.y)*(from.y-to.y)
+        return sqrt(squared)
+      }
+      
+      let distance = distanceBetweenTwoPoints(from: previousLocation, to: location)
+      
+      CGContextBeginPath(context)
+      CGContextSetStrokeColorWithColor(context, UIColor.redColor().CGColor)
+      pencilTexture.setStroke()
+      
+      
+      CGContextSetLineWidth(context, distance);
+      CGContextMoveToPoint(context, location.x, location.y)
+      
+      var targetPoint = CGPoint(x:0.5 + lineWidth * cos(touch.altitudeAngle), y:0.0)
+      targetPoint = CGPointApplyAffineTransform(targetPoint, CGAffineTransformMakeRotation(touch.azimuthAngleInView(self)))
+      targetPoint.x += location.x
+      targetPoint.y += location.y
+      CGContextAddLineToPoint(context, targetPoint.x, targetPoint.y)
+      
+      
+    }
     
     // Draw the stroke
     CGContextStrokePath(context)
     
   }
   
-  func drawLine(context: CGContext?, touch: UITouch) -> CGFloat {
+  func lineWidthForDrawing(context: CGContext?, touch: UITouch) -> CGFloat {
     
     CGContextSetLineCap(context, .Round)
     var lineWidth = self.lineWidth
@@ -142,7 +164,7 @@ class CanvasView: UIImageView {
     return lineWidth
   }
   
-  func drawShading(context: CGContext?, touch: UITouch) -> CGFloat {
+  func lineWidthForShading(context: CGContext?, touch: UITouch) -> CGFloat {
     
     CGContextSetLineCap(context, .Round)
     
@@ -204,26 +226,8 @@ class CanvasView: UIImageView {
     return lineWidth
   }
   
-  func averageLineWidth(lineWidth: CGFloat) -> CGFloat {
-    return lineWidth
-    var newLineWidth = lineWidth
-    previousLineSizes.append(lineWidth)
-    if previousLineSizes.count <= 1 {
-      return lineWidth
-    }
-    let averageLineWidth:CGFloat = previousLineSizes.reduce(0, combine: {$0 + $1}) / CGFloat(previousLineSizes.count)
-    
-
-    if previousLineSizes.count > LineSizeTolerance {
-      previousLineSizes.removeAtIndex(0)
-    }
-    
-    newLineWidth = lineWidth > averageLineWidth ?
-      min(lineWidth, averageLineWidth + MaxLineWidthGrowth) :
-      max(lineWidth, averageLineWidth + MaxLineWidthGrowth)
-    
-    return newLineWidth
-  }
+  
+  
   
   func clearCanvas() {
     image = UIImage(named: "Background")

@@ -290,6 +290,7 @@
 				82B175611C0A7A2100A199A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
