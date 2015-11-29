@@ -95,18 +95,18 @@ class CanvasView: UIImageView {
       }
       
       // Set up the default stroke
-      CGContextSetLineWidth(context, lineWidth)
       
       pencilTexture.setStroke()
     } else {
       // erase with finger
       CGContextSetLineCap(context, .Round)
 
-      let lineWidth = touch.majorRadius / 2
-      CGContextSetLineWidth(context, lineWidth)
+      lineWidth = touch.majorRadius / 2
+      lineWidth = max(lineWidth, 6)
 
       eraserColor.setStroke()
     }
+    CGContextSetLineWidth(context, lineWidth)
     
     // Set up the points
     CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
