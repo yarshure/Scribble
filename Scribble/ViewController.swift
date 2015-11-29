@@ -12,8 +12,13 @@ class ViewController: UIViewController {
 
   @IBOutlet weak var canvasView: CanvasView!
 
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    canvasView.clearCanvas()
+  }
+  
   @IBAction func btnClear(sender: AnyObject) {
-    canvasView.image = UIImage(named: "Background")
+    canvasView.clearCanvas()
   }
 
 }

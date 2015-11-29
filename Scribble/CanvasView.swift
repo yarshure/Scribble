@@ -31,11 +31,14 @@ class CanvasView: UIImageView {
   let TiltThreshold = π / 6
   let MinLineWidth:CGFloat = 5
   
+  // For averaging line sizes
+  let MaxLineWidthGrowth:CGFloat = 5  // Max amount line width can increase for a stroke
+  let LineSizeTolerance:Int = 115 // Number of lines to hold in array
+  var previousLineSizes = [CGFloat]()
   
-  required init?(coder aDecoder: NSCoder) {
-    super.init(coder: aDecoder)
-    self.layer.borderColor = UIColor.blueColor().CGColor
-    self.layer.borderWidth = 1
+
+  override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    previousLineSizes = [CGFloat]()
   }
   
   override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -84,6 +87,7 @@ class CanvasView: UIImageView {
     
   }
   
+  
   func drawStroke(context: CGContext?, touch: UITouch) {
     let previousLocation = touch.previousLocationInView(self)
     let location = touch.locationInView(self)
@@ -108,7 +112,14 @@ class CanvasView: UIImageView {
       eraserColor.setStroke()
     }
     lineWidth = max(lineWidth, MinLineWidth)
+    
+    // this removes blobs and makes drawing a bit smoother)
+    // lineWidth doesn't increment by more than
+    // MaxLineWidthGrowth plus average of last LineSizeTolerance points
+    lineWidth = averageLineWidth(lineWidth)
+    
     CGContextSetLineWidth(context, lineWidth)
+    
     
     // Set up the points
     CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
@@ -133,7 +144,7 @@ class CanvasView: UIImageView {
   
   func drawShading(context: CGContext?, touch: UITouch) -> CGFloat {
     
-    CGContextSetLineCap(context, .Square)
+    CGContextSetLineCap(context, .Round)
     
     let previousLocation = touch.previousLocationInView(self)
     let location = touch.locationInView(self)
@@ -191,5 +202,31 @@ class CanvasView: UIImageView {
     CGContextSetAlpha(context, normalizedAlpha)
     
     return lineWidth
+  }
+  
+  func averageLineWidth(lineWidth: CGFloat) -> CGFloat {
+    return lineWidth
+    var newLineWidth = lineWidth
+    previousLineSizes.append(lineWidth)
+    if previousLineSizes.count <= 1 {
+      return lineWidth
+    }
+    let averageLineWidth:CGFloat = previousLineSizes.reduce(0, combine: {$0 + $1}) / CGFloat(previousLineSizes.count)
+    
+
+    if previousLineSizes.count > LineSizeTolerance {
+      previousLineSizes.removeAtIndex(0)
+    }
+    
+    newLineWidth = lineWidth > averageLineWidth ?
+      min(lineWidth, averageLineWidth + MaxLineWidthGrowth) :
+      max(lineWidth, averageLineWidth + MaxLineWidthGrowth)
+    
+    return newLineWidth
+  }
+  
+  func clearCanvas() {
+    image = UIImage(named: "Background")
+    drawingImage = image
   }
 }
