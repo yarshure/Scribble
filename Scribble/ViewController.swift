@@ -35,6 +35,36 @@ class ViewController: UIViewController {
   override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent?) {
     canvasView.clearCanvas(animated: true)
   }
+  
+  @IBAction func btnCoalesced(button:UIButton) {
+    canvasView.isCoalesced = !canvasView.isCoalesced
+    if (canvasView.isCoalesced) {
+      button.setTitle("Coalesced ON", forState: .Normal)
+    } else {
+      button.setTitle("Coalesced OFF", forState: .Normal)
+    }
+  }
+
+  @IBAction func btnPredicted(button:UIButton) {
+    canvasView.isPredicted = !canvasView.isPredicted
+    if (canvasView.isPredicted) {
+      button.setTitle("Predicted ON", forState: .Normal)
+    } else {
+      button.setTitle("Predicted OFF", forState: .Normal)
+    }
+  }
+  
+  @IBAction func btnShowPredicted(button:UIButton) {
+    canvasView.isShowPredicted = !canvasView.isShowPredicted
+    if (canvasView.isShowPredicted) {
+      button.setTitle("Show Predicted ON", forState: .Normal)
+    } else {
+      button.setTitle("Show Predicted OFF", forState: .Normal)
+    }
+
+  }
+  
+  
 }
 
 

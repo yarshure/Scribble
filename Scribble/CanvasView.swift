@@ -26,6 +26,10 @@ let π = CGFloat(M_PI)
 
 class CanvasView: UIImageView {
   
+  var isCoalesced = false
+  var isPredicted = false
+  var isShowPredicted = false
+  
   // Parameters
   private let DefaultLineWidth:CGFloat = 6
   private let ForceSensitivity:CGFloat = 4.0
@@ -58,7 +62,7 @@ class CanvasView: UIImageView {
     
     // Coalesce Touches
     // 2
-    if let coalescedTouches = event?.coalescedTouchesForTouch(touch) {
+    if let coalescedTouches = event?.coalescedTouchesForTouch(touch) where isCoalesced {
       touches = coalescedTouches
     } else {
       touches.append(touch)
@@ -66,16 +70,20 @@ class CanvasView: UIImageView {
     
     // 4
     for touch in touches {
-      drawStroke(context, touch: touch)
+      drawStroke(context, touch: touch, isPredictedTouch: false)
     }
     
     // 1
     drawingImage = UIGraphicsGetImageFromCurrentImageContext()
     // 2
-    if let predictedTouches = event?.predictedTouchesForTouch(touch) {
+    if let predictedTouches = event?.predictedTouchesForTouch(touch) where isPredicted {
       for touch in predictedTouches {
-        drawStroke(context, touch: touch)
+        drawStroke(context, touch: touch, isPredictedTouch: true)
       }
+    }
+    
+    if isShowPredicted {
+      drawingImage = UIGraphicsGetImageFromCurrentImageContext()
     }
     
     // Update image
@@ -93,7 +101,7 @@ class CanvasView: UIImageView {
       self.image = drawingImage
   }
   
-  private func drawStroke(context: CGContext?, touch: UITouch) {
+  private func drawStroke(context: CGContext?, touch: UITouch, isPredictedTouch:Bool) {
     let previousLocation = touch.previousLocationInView(self)
     let location = touch.locationInView(self)
     
@@ -106,7 +114,11 @@ class CanvasView: UIImageView {
         lineWidth = lineWidthForDrawing(context, touch: touch)
       }
       // Set color
-      pencilTexture.setStroke()
+      if isShowPredicted && isPredictedTouch {
+        UIColor.blueColor().setStroke()
+      } else {
+        pencilTexture.setStroke()
+      }
     } else {
       // Erase with finger
       lineWidth = touch.majorRadius / 2

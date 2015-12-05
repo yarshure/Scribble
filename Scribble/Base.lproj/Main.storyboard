@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -22,13 +23,44 @@
                                 <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yFM-Gu-MhD">
+                                <rect key="frame" x="453" y="61" width="105" height="30"/>
+                                <animations/>
+                                <state key="normal" title="Coalesced OFF"/>
+                                <connections>
+                                    <action selector="btnCoalesced:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Gdj-oq-DMn"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gUB-uT-W90">
+                                <rect key="frame" x="459" y="131" width="99" height="30"/>
+                                <animations/>
+                                <state key="normal" title="Predicted OFF"/>
+                                <connections>
+                                    <action selector="btnPredicted:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZzU-d2-3J2"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uaW-FG-Lb3">
+                                <rect key="frame" x="418" y="201" width="140" height="30"/>
+                                <animations/>
+                                <state key="normal" title="Show Predicted OFF"/>
+                                <connections>
+                                    <action selector="btnShowPredicted:" destination="BYZ-38-t0r" eventType="touchUpInside" id="RPd-IT-mbT"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="uaW-FG-Lb3" firstAttribute="top" secondItem="gUB-uT-W90" secondAttribute="bottom" constant="40" id="6sA-rD-dvm"/>
                             <constraint firstItem="zBF-1D-PJp" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="DLa-PT-5Rx"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="gUB-uT-W90" secondAttribute="trailing" constant="22" id="FxD-oE-0Xx"/>
+                            <constraint firstItem="gUB-uT-W90" firstAttribute="leading" secondItem="yFM-Gu-MhD" secondAttribute="trailing" constant="-99" id="QxR-rv-QWm"/>
                             <constraint firstItem="zBF-1D-PJp" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Xjj-yD-t0w"/>
+                            <constraint firstItem="uaW-FG-Lb3" firstAttribute="trailing" secondItem="gUB-uT-W90" secondAttribute="trailing" id="d7V-tB-Z7l"/>
                             <constraint firstAttribute="trailing" secondItem="zBF-1D-PJp" secondAttribute="trailing" id="do4-zQ-V6n"/>
+                            <constraint firstItem="gUB-uT-W90" firstAttribute="trailing" secondItem="yFM-Gu-MhD" secondAttribute="trailing" id="jjY-O5-JDW"/>
+                            <constraint firstItem="zBF-1D-PJp" firstAttribute="top" secondItem="yFM-Gu-MhD" secondAttribute="bottom" constant="-71" id="ooZ-XS-C1q"/>
+                            <constraint firstItem="gUB-uT-W90" firstAttribute="top" secondItem="yFM-Gu-MhD" secondAttribute="bottom" constant="40" id="uSX-Pf-9EP"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="zBF-1D-PJp" secondAttribute="bottom" id="xeF-q0-K7c"/>
                         </constraints>
                     </view>
