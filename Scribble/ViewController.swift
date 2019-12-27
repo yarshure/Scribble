@@ -30,41 +30,48 @@ class ViewController: UIViewController {
     super.viewDidLoad()
     canvasView.clearCanvas(animated:false)
   }
-  
+    
   // Shake to clear screen
-  override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent?) {
+
+    
+ override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
     canvasView.clearCanvas(animated: true)
   }
   
   @IBAction func btnCoalesced(button:UIButton) {
     canvasView.isCoalesced = !canvasView.isCoalesced
     if (canvasView.isCoalesced) {
-      button.setTitle("Coalesced ON", forState: .Normal)
+      button.setTitle("Coalesced ON", for: .normal)
     } else {
-      button.setTitle("Coalesced OFF", forState: .Normal)
+      button.setTitle("Coalesced OFF", for: .normal)
     }
   }
 
   @IBAction func btnPredicted(button:UIButton) {
     canvasView.isPredicted = !canvasView.isPredicted
     if (canvasView.isPredicted) {
-      button.setTitle("Predicted ON", forState: .Normal)
+      button.setTitle("Predicted ON", for: .normal)
     } else {
-      button.setTitle("Predicted OFF", forState: .Normal)
+      button.setTitle("Predicted OFF", for: .normal)
     }
   }
   
   @IBAction func btnShowPredicted(button:UIButton) {
     canvasView.isShowPredicted = !canvasView.isShowPredicted
     if (canvasView.isShowPredicted) {
-      button.setTitle("Show Predicted ON", forState: .Normal)
+      button.setTitle("Show Predicted ON", for: .normal)
     } else {
-      button.setTitle("Show Predicted OFF", forState: .Normal)
+      button.setTitle("Show Predicted OFF", for: .normal)
     }
-
+   
   }
   
-  
+
+//   override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+//
+//    canvasView.clearCanvas(animated: true)
+//    }
+
 }
 
 

@@ -22,7 +22,7 @@
 
 import UIKit
 
-let π = CGFloat(M_PI)
+let π = CGFloat(Double.pi)
 
 class CanvasView: UIImageView {
   
@@ -31,38 +31,37 @@ class CanvasView: UIImageView {
   var isShowPredicted = false
   
   // Parameters
-  private let DefaultLineWidth:CGFloat = 6
-  private let ForceSensitivity:CGFloat = 4.0
-  private let TiltThreshold = π/6  // 30º
-  private let MinLineWidth:CGFloat = 5
+  private let defaultLineWidth: CGFloat = 6
+  private let forceSensitivity: CGFloat = 4.0
+  private let tiltThreshold = π/6  // 30º
+  private let minLineWidth: CGFloat = 5
   
   private var drawingImage: UIImage?
   
-  private var drawColor: UIColor = UIColor.redColor()
+    private var drawColor: UIColor = UIColor.red
   private var pencilTexture: UIColor = UIColor(patternImage: UIImage(named: "PencilTexture")!)
   
   private var eraserColor: UIColor {
-    if let backgroundColor = self.backgroundColor {
-      return backgroundColor
-    }
-    return UIColor.whiteColor()
+    return backgroundColor ?? UIColor.white
   }
-  
-  override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+         
     guard let touch = touches.first else { return }
     
     UIGraphicsBeginImageContextWithOptions(bounds.size, false, 0.0)
     let context = UIGraphicsGetCurrentContext()
     
     // Draw previous image into context
-    drawingImage?.drawInRect(bounds)
+    drawingImage?.draw(in: bounds)
     
     // 1
     var touches = [UITouch]()
     
     // Coalesce Touches
     // 2
-    if let coalescedTouches = event?.coalescedTouchesForTouch(touch) where isCoalesced {
+
+    if let coalescedTouches = event?.coalescedTouches(for: touch), isCoalesced {
+
       touches = coalescedTouches
     } else {
       touches.append(touch)
@@ -70,16 +69,21 @@ class CanvasView: UIImageView {
     
     // 4
     for touch in touches {
-      drawStroke(context, touch: touch, isPredictedTouch: false)
+
+        drawStroke(context: context, touch: touch, isPredictedTouch: false)
+        
+
     }
     
     // 1
     drawingImage = UIGraphicsGetImageFromCurrentImageContext()
     // 2
-    if let predictedTouches = event?.predictedTouchesForTouch(touch) where isPredicted {
+
+    if let predictedTouches = event?.predictedTouches(for: touch), isPredicted {
       for touch in predictedTouches {
-        drawStroke(context, touch: touch, isPredictedTouch: true)
-      }
+        drawStroke(context: context, touch: touch, isPredictedTouch: true)
+
+        }
     }
     
     if isShowPredicted {
@@ -87,35 +91,40 @@ class CanvasView: UIImageView {
     }
     
     // Update image
-    self.image = UIGraphicsGetImageFromCurrentImageContext()
+    image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
   }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+         image = drawingImage
+    }
+
+    override            func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        image = drawingImage
+    }
+
   
-  override func touchesEnded(touches: Set<UITouch>,
-    withEvent event: UIEvent?) {
-      self.image = drawingImage
-  }
-  
-  override func touchesCancelled(touches: Set<UITouch>?,
-    withEvent event: UIEvent?) {
-      self.image = drawingImage
-  }
-  
-  private func drawStroke(context: CGContext?, touch: UITouch, isPredictedTouch:Bool) {
-    let previousLocation = touch.previousLocationInView(self)
-    let location = touch.locationInView(self)
+
+    func drawStroke(context: CGContext?, touch: UITouch, isPredictedTouch:Bool) {
+        let previousLocation = touch.previousLocation(in: self)
+        let location = touch.location(in: self)
+                
+    }
+   func drawStroke(context: CGContext?, touch: UITouch) {
+    let previousLocation = touch.previousLocation(in: self)
+    let location = touch.location(in: self)
+
     
-    var lineWidth:CGFloat
-    if touch.type == .Stylus {
+    var lineWidth: CGFloat
+    if touch.type == .stylus {
       // Calculate line width for drawing stroke
-      if touch.altitudeAngle < TiltThreshold {
-        lineWidth = lineWidthForShading(context, touch: touch)
+      if touch.altitudeAngle < tiltThreshold {
+        lineWidth = lineWidthForShading(context: context, touch: touch)
       } else {
-        lineWidth = lineWidthForDrawing(context, touch: touch)
+        lineWidth = lineWidthForDrawing(context: context, touch: touch)
       }
       // Set color
-      if isShowPredicted && isPredictedTouch {
-        UIColor.blueColor().setStroke()
+      if isShowPredicted && isPredicted  {
+        UIColor.blue.setStroke()
       } else {
         pencilTexture.setStroke()
       }
@@ -126,34 +135,34 @@ class CanvasView: UIImageView {
     }
     
     // Configure line
-    CGContextSetLineWidth(context, lineWidth)
-    CGContextSetLineCap(context, .Round)
+    context!.setLineWidth(lineWidth)
+    context!.setLineCap(.round)
 
     
     // Set up the points
-    CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
-    CGContextAddLineToPoint(context, location.x, location.y)
+    context!.move(to: previousLocation)
+    context!.addLine(to: location)
+   // CGContextMoveToPoint(context, previousLocation.x, previousLocation.y)
+    //CGContextAddLineToPoint(context, location.x, location.y)
     // Draw the stroke
-    CGContextStrokePath(context)
+    context!.strokePath()
     
   }
   
-  private func lineWidthForShading(context: CGContext?, touch: UITouch) -> CGFloat {
+   func lineWidthForShading(context: CGContext?, touch: UITouch) -> CGFloat {
     
     // 1
-    let previousLocation = touch.previousLocationInView(self)
-    let location = touch.locationInView(self)
+    let previousLocation = touch.previousLocation(in: self)
+    let location = touch.location(in: self)
     
     // 2 - vector1 is the pencil direction
-    let vector1 = touch.azimuthUnitVectorInView(self)
+    let vector1 = touch.azimuthUnitVector(in: self)
     
     // 3 - vector2 is the stroke direction
-    let vector2 = CGPoint(x: location.x - previousLocation.x,
-      y: location.y - previousLocation.y)
+    let vector2 = CGPoint(x: location.x - previousLocation.x, y: location.y - previousLocation.y)
     
     // 4 - Angle difference between the two vectors
-    var angle = abs(atan2(vector2.y, vector2.x)
-      - atan2(vector1.dy, vector1.dx))
+    var angle = abs(atan2(vector2.y, vector2.x) - atan2(vector1.dy, vector1.dx))
     
     // 5
     if angle > π {
@@ -164,20 +173,19 @@ class CanvasView: UIImageView {
     }
     
     // 6
-    let minAngle:CGFloat = 0
-    let maxAngle:CGFloat = π / 2
+    let minAngle: CGFloat = 0
+    let maxAngle = π / 2
     let normalizedAngle = (angle - minAngle) / (maxAngle - minAngle)
     
     // 7
-    let maxLineWidth:CGFloat = 60
-    var lineWidth:CGFloat
-    lineWidth = maxLineWidth * normalizedAngle
+    let maxLineWidth: CGFloat = 60
+    var lineWidth = maxLineWidth * normalizedAngle
     
     // 1 - modify lineWidth by altitude (tilt of the Pencil)
     // 0.25 radians means widest stroke and TiltThreshold is where shading narrows to line.
     
-    let minAltitudeAngle:CGFloat = 0.25
-    let maxAltitudeAngle:CGFloat = TiltThreshold
+    let minAltitudeAngle: CGFloat = 0.25
+    let maxAltitudeAngle = tiltThreshold
     
     // 2
     let altitudeAngle = touch.altitudeAngle < minAltitudeAngle
@@ -187,36 +195,35 @@ class CanvasView: UIImageView {
     let normalizedAltitude = 1 - ((altitudeAngle - minAltitudeAngle)
       / (maxAltitudeAngle - minAltitudeAngle))
     // 4
-    lineWidth = lineWidth * normalizedAltitude + MinLineWidth
+    lineWidth = lineWidth * normalizedAltitude + minLineWidth
     
     // Set alpha of shading using force
-    let minForce:CGFloat = 0.0
-    let maxForce:CGFloat = 5
+    let minForce: CGFloat = 0.0
+    let maxForce: CGFloat = 5
     
     // Normalize between 0 and 1
     let normalizedAlpha = (touch.force - minForce) / (maxForce - minForce)
     
-    CGContextSetAlpha(context, normalizedAlpha)
+    context!.setAlpha(normalizedAlpha)
     
     return lineWidth
   }
   
   
-  private func lineWidthForDrawing(context: CGContext?, touch: UITouch) -> CGFloat {
+   func lineWidthForDrawing(context: CGContext?, touch: UITouch) -> CGFloat {
 
-    var lineWidth:CGFloat
-    lineWidth = DefaultLineWidth
+    var lineWidth = defaultLineWidth
     
     if touch.force > 0 {  // If finger, touch.force = 0
-      lineWidth = touch.force * ForceSensitivity
+      lineWidth = touch.force * forceSensitivity
     }
     
     return lineWidth
   }
   
-  func clearCanvas(animated animated: Bool) {
+    func clearCanvas (animated: Bool) {
     if animated {
-      UIView.animateWithDuration(0.5, animations: {
+        UIView.animate(withDuration: 0.5, animations: {
         self.alpha = 0
         }, completion: { finished in
           self.alpha = 1
@@ -229,3 +236,4 @@ class CanvasView: UIImageView {
     }
   }
 }
+
