@@ -108,10 +108,10 @@ class CanvasView: UIImageView {
         let previousLocation = touch.previousLocation(in: self)
         let location = touch.location(in: self)
                 
-    }
-   func drawStroke(context: CGContext?, touch: UITouch) {
-    let previousLocation = touch.previousLocation(in: self)
-    let location = touch.location(in: self)
+//    }
+//   func drawStroke(context: CGContext?, touch: UITouch) {
+//    let previousLocation = touch.previousLocation(in: self)
+//    let location = touch.location(in: self)
 
     
     var lineWidth: CGFloat

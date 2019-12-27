@@ -38,7 +38,7 @@ class ViewController: UIViewController {
     canvasView.clearCanvas(animated: true)
   }
   
-  @IBAction func btnCoalesced(button:UIButton) {
+  @IBAction func btnCoalesced(_ button:UIButton) {
     canvasView.isCoalesced = !canvasView.isCoalesced
     if (canvasView.isCoalesced) {
       button.setTitle("Coalesced ON", for: .normal)
@@ -47,7 +47,7 @@ class ViewController: UIViewController {
     }
   }
 
-  @IBAction func btnPredicted(button:UIButton) {
+  @IBAction func btnPredicted(_ button:UIButton) {
     canvasView.isPredicted = !canvasView.isPredicted
     if (canvasView.isPredicted) {
       button.setTitle("Predicted ON", for: .normal)
@@ -56,7 +56,7 @@ class ViewController: UIViewController {
     }
   }
   
-  @IBAction func btnShowPredicted(button:UIButton) {
+  @IBAction func btnShowPredicted(_ button:UIButton) {
     canvasView.isShowPredicted = !canvasView.isShowPredicted
     if (canvasView.isShowPredicted) {
       button.setTitle("Show Predicted ON", for: .normal)
