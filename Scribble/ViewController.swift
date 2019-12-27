@@ -31,7 +31,7 @@ class ViewController: UIViewController {
     canvasView.clearCanvas()
   }
   
-  @IBAction func btnClear(sender: AnyObject) {
+  @IBAction func btnClear(_ sender: AnyObject) {
     canvasView.clearCanvas()
   }
 
